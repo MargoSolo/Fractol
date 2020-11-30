@@ -1,63 +1,44 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: xlongfel <marvin@42.fr>                    +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2019/11/08 10:12:58 by xlongfel          #+#    #+#              #
+#    Updated: 2019/11/26 14:44:20 by xlongfel         ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
+
+.PHONY: all, $(NAME), clean, fclean, re
 
 NAME = fractol
 
-SRC_PATH = src
+SRCS = ./cl.c ./init.c ./jul.c ./key.c ./main.c ./mand.c ./ohhh.c
 
-SRC_NAME = ./cl.c ./error.c ./init.c ./jul.c ./key.c ./korabl.c ./main.c ./mand.c ./module.c ./mouse.c ./ohhh.c
+INC = -I includes/fractol.h -I libft/
 
-CPPFLAGS = -I libft/includes/ -I /usr/local/include/ -MMD
+LIB = -L minilibx_macos/ -l mlx -L libft/ -lft
 
-LDFLAGS = -L libft/ -lft -lpthread
-
-MLX_FLAGS = -I ./minilibx_macos/ ./minilibx_macos/libmlx.a
-
-LDLIBS = -framework OpenGL -framework AppKit
-
-CC = gcc
-
-CFLAGS = -Werror -Wall -Wextra
-
-OBJ_NAME = $(SRC_NAME:.c=.o)
-
-OBJ_PATH = obj
-
-HEADER_PATH = includes/
-
-HEADER_NAME = fractol.h
-
-OBJ = $(addprefix $(OBJ_PATH)/,$(OBJ_NAME))
-
-SRC = $(addprefix $(SRC_PATH)/,$(SRC_NAME))
-
-HEADER = $(addprefix $(HEADER_PATH)/,$(HEADER_NAME))
+FRM = -framework OpenGL -framework AppKit
 
 all: $(NAME)
 
-$(NAME): $(OBJ)
-	make -C libft/
-	make -C minilibx_macos
-	$(CC) $(CFLAGS) $(LDFLAGS) $(MLX_FLAGS) $(LDLIBS) $^ -o $@
-
-$(OBJ_PATH)/%.o: $(SRC_PATH)/%.c | $(OBJ_PATH)
-	$(CC) $(CFLAGS) $(CPPFLAGS) -I $(HEADER_PATH) -o $@ -c $<
-
-$(OBJ_PATH):
-	@mkdir $(OBJ_PATH) 2> /dev/null || true
+$(NAME):
+	@mkdir -p obj/
+	@make -C minilibx_macos
+	@make -C libft
+	@gcc -Wall -Werror -Wextra -c $(SRCS) $(INC)
+	@mv *.o obj/
+	@gcc obj/*.o $(LIB) -o $(NAME) $(FRM)
 
 clean:
-	make clean -C libft/
-	make clean -C minilibx_macos
-	rm -f $(OBJ) $(OBJ:.o=.d)
-	@rmdir $(OBJ_PATH) 2> /dev/null || true
+	@make -C minilibx_macos/ clean
+	@make -C libft/ clean
+	@rm -rf obj/
 
 fclean: clean
-	make fclean -C libft/
-	make fclean -C minilibx_macos/
-	rm -f $(NAME)
+	@make -C libft/ fclean
+	@rm -rf $(NAME)
 
-re: fclean
-	$(MAKE) all
-
-.PHONY: make clean fclean re
-
--include $(OBJ:.o=.d)
+re: fclean all
